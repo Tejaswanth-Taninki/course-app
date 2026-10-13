@@ -23,7 +23,9 @@ async function request(path, options = {}, token) {
   }
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data.message || `Server returned error (${response.status})`);
+    const error = new Error(data.message || `Server returned error (${response.status})`);
+    error.status = response.status;
+    throw error;
   }
   return data;
 }
@@ -80,7 +82,7 @@ export default function App() {
       setMyCourses(enrolledList);
     } catch (err) {
       notify(err.message, 'error');
-      if (/session|invalid|expired|token/i.test(err.message)) logout();
+      if (err.status === 401) logout();
     }
   };
 
@@ -95,7 +97,7 @@ export default function App() {
       }
     } catch (err) {
       notify(err.message, 'error');
-      if (/session|invalid|expired|token/i.test(err.message)) logout();
+      if (err.status === 401) logout();
     }
   };
 
